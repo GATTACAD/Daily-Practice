@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <script src="jquery-3.2.1.js"></script>
+    <style>
+        body{
+            background-color: #323332;
+        }
+        #search{
+            border-top: #65C96F 5px solid;
+            width: 600px;
+            height: 200px;
+            margin:0 auto;
+            padding:20px;
+            background-color: #fff;
+            text-align: left;
+            position:relative;
+        }
+        .autocomplete li{
+            list-style-type: none;
+        }
+        .tip {
+            text-align: left;
+            margin-bottom:5px;
+            font-size:14px;
+            color: #999;
+        }
+        .suggest{
+            border-top: 0;
+            background-color: #fff;
+            display: none;
+        }
+        .suggest ul{
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .suggest ul li{
+            padding: 3px;
+            border-radius:3px;
+            font: bold 16px "微软雅黑";
+            height: 30px;
+            line-height: 30px;
+            cursor: pointer;
+        }
+        .suggest ul li:hover{
+            background-color: #E0E0E0;
+        }
+
+        #search_text {
+            width: 535px;
+            height: 30px;
+            padding-left: 15px;
+            border: 2px #ECECEC solid;
+            border-radius: 5px;
+            font-size:16px;
+            /*box-sizing: border-box;*/
+        }
+
+
+    </style>
+
+</head>
+<body>
+    <div id = "search">
+        <h1>HTML元素列表（使用AJAX加载）</h1>
+        <p class="tip">选择一个元素</p>
+        <input type="text" id="search_text" placeholder=" e.g. datalist" name="search-text" />
+    </div>
+    <div class="suggest" id="search_suggest">
+        <ul id="search_result">
+        </ul>
+
+    </div>
+
+
+<script>
+    $(function(){
+
+        //为输入框绑定键盘弹起事件
+        $("#search_text").bind('keyup',function(){
+
+            //$.ajax()远程获取json数据
+            var searchText = $('#search_text').val();
+            if(searchText){
+                $.ajax({
+                    type: "get",
+                    url: "https://s3-us-west-2.amazonaws.com/s.cdpn.io/4621/html-elements.json",
+                    dataType: 'json',
+                    data: {
+                        queryString: searchText
+                    },
+                    success: function(response,status,xhr){
+
+                        //处理返回数据
+                        arr=response;
+                        var html="";
+                        for(var i=0;i<arr.length-1;i++){
+                            if(arr[i].indexOf($("#search_text").val()) >= 0 ){
+                                html+='<li>'+arr[i]+'</li>';
+                            }
+                        }
+                        $('#search_result').html(html);
+
+                        //显示返回数据
+                        $("#search_suggest").show().css({
+                            position: 'absolute',
+                            top: $('#search_text').offset().top + $("#search_text").height() + 5,
+                            left: $('#search_text').offset().left,
+                        width: $('#search_text').width() + 15
+                        });
+                    },
+                    beforeSend: function(){
+                        console.log("即将发送ajax请求");
+                    },
+                    error: function(xhr,errorText,errorType){
+                        console.log(errorType+":"+errorType);
+                    }
+                });
+            }else {
+                $("#search_suggest")[0].style.display = 'none';
+            }
+        });
+
+        //点击空白处，隐藏提示框
+        $(document).bind('click', function() {
+            $("#search_suggest").hide();
+            $("#search_suggest").val("");
+        });
+        $("#search_text").bind('focusout', function() {
+            $("#search_suggest").val("");
+        });
+
+
+
+
+    });
+
+
+
+
+</script>
+</body>
+</html>
